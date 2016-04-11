@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Faye</title>
+
+  <style>
+    input { display: block; }
+    ul { list-style: none; }
+  </style>
+
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js"
+          integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo="
+          crossorigin="anonymous">
+  </script>
+</head>
+<body>
+  <script type="text/javascript"
+          src="http://localhost:9292/faye/client.js">
+  </script>
+
+  <h2>Messages:</h2>
+
+  <ul id="messages"></ul>
+
+  <form id="chatbox">
+    <textarea></textarea>
+    <input type="submit" value="Send" />
+  </form>
+
+  <script type="text/javascript">
+    $(function () {
+
+      var serverUrl = 'http://localhost:9292/faye',
+          options = { timeout: 120, retry: 5 },
+          channelName = 'messages/new',
+          msgBox = $('#chatbox textarea'),
+          messages = $('#messages');
+          client = new Faye.Client(serverUrl, options),
+
+      client.subscribe("/messages/new", appendMessage).then(notifyOfSubcription);
+
+      client.on('transport:down', function() {
+        console.log('the client is offline');
+      });
+
+      client.on('transport:up', function() {
+        console.log('the client is online');
+      });
+
+      $('#chatbox').submit(sendMessage);
+
+      function appendMessage(data) {
+        messages.append($("<li>").text(data));
+      };
+
+      function notifyOfSubcription(data) {
+        console.log('Subscription is now active!');
+      };
+
+      function clearMsgBox() {
+        msgBox.val("");
+      };
+
+      function sendMessage() {
+        var msg = msgBox.val();
+
+        if (msg) {
+          client.publish('/messages/new', msg).then(clearMsgBox);
+        }
+        return false;
+      };
+
+    }());
+  </script>
+
+</body>
+</html>
