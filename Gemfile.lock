@@ -37,6 +37,3 @@ PLATFORMS
 DEPENDENCIES
   faye
   puma
-
-BUNDLED WITH
-   1.11.2
